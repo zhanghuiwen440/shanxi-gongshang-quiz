@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <title>档案知识闯关</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 开始页面 -->
+    <div id="start-page" class="page">
+        <div class="start-container">
+            <div class="logo">📚</div>
+            <h1 class="title">山西工商学院<br>档案知识闯关</h1>
+            <p class="subtitle">庆祝建校40周年 · 2026</p>
+            <div class="game-info">
+                <div class="info-item">
+                    <span class="icon">📝</span>
+                    <span>25道精选题目</span>
+                </div>
+                <div class="info-item">
+                    <span class="icon">⏱️</span>
+                    <span>限时150秒</span>
+                </div>
+                <div class="info-item">
+                    <span class="icon">🏆</span>
+                    <span>闯关模式</span>
+                </div>
+            </div>
+            <button id="start-btn" class="btn btn-primary">开始闯关</button>
+            <div class="category-select">
+                <h3>选择题目类型</h3>
+                <div class="category-buttons">
+                    <button class="category-btn active" data-category="all">全部（100题）</button>
+                    <button class="category-btn" data-category="laws">📜 法律法规</button>
+                    <button class="category-btn" data-category="process">📋 毕业流程</button>
+                    <button class="category-btn" data-category="history">🏛️ 校史知识</button>
+                    <button class="category-btn" data-category="archives">📁 档案管理</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 答题页面 -->
+    <div id="game-page" class="page hidden">
+        <div class="game-header">
+            <div class="game-header-top">
+                <button id="back-to-start-btn" class="back-btn">← 返回</button>
+                <div class="game-stats">
+                    <span class="stat">题目: <span id="current-question">1</span>/<span id="total-questions">20</span></span>
+                    <span class="stat">得分: <span id="score">0</span></span>
+                    <span class="stat timer">⏱️ <span id="timer">60</span>s</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+        <div class="question-container">
+            <div class="question-category" id="question-category">全部题目</div>
+            <h2 class="question-text" id="question-text">题目将在这里显示</h2>
+            <div class="options-container" id="options-container">
+                <!-- 选项将通过JS动态生成 -->
+            </div>
+            <div class="feedback" id="feedback"></div>
+        </div>
+        <div class="game-footer">
+            <button id="next-btn" class="btn btn-secondary hidden">下一题</button>
+        </div>
+    </div>
+
+    <!-- 结果页面 -->
+    <div id="result-page" class="page hidden">
+        <div class="result-container">
+            <div class="result-icon" id="result-icon">🎉</div>
+            <h1 class="result-title" id="result-title">恭喜通关!</h1>
+            <div class="result-stats">
+                <div class="stat-item">
+                    <span class="stat-label">最终得分</span>
+                    <span class="stat-value" id="final-score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">答对题数</span>
+                    <span class="stat-value" id="correct-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">正确率</span>
+                    <span class="stat-value" id="accuracy">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">用时</span>
+                    <span class="stat-value" id="time-used">60s</span>
+                </div>
+            </div>
+            <div class="result-message" id="result-message"></div>
+            <div class="result-actions">
+                <button id="restart-btn" class="btn btn-primary">再玩一次</button>
+                <button id="share-btn" class="btn btn-secondary">分享成绩</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
