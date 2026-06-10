@@ -1,3 +1,8 @@
+// 检测是否在微信浏览器中
+function isWeChatBrowser() {
+    return /MicroMessenger/i.test(navigator.userAgent);
+}
+
 // 题库数据 - 山西工商学院档案知识
 const questionBank = {
     laws: [
@@ -633,17 +638,22 @@ async function generateShareImage() {
         ctx.fillStyle = '#999999';
         ctx.fillText('计算机信息工程学院', 300, 800);
         
-        // 创建下载链接
-        const link = document.createElement('a');
-        link.download = `档案闯关_${userInfo.studentId}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.style.display = 'none';
+        const imgData = canvas.toDataURL('image/png');
         
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        alert('分享图片已生成并下载！');
+        if (isWeChatBrowser()) {
+            // 微信浏览器：显示图片供长按保存
+            showShareImageModal(imgData);
+        } else {
+            // 普通浏览器：直接下载图片
+            const link = document.createElement('a');
+            link.download = `档案闯关_${userInfo.studentId}.png`;
+            link.href = imgData;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            alert('分享图片已生成并下载！');
+        }
         
     } catch (error) {
         console.error('生成分享图片失败:', error);
@@ -652,15 +662,31 @@ async function generateShareImage() {
         const timeUsed = Math.floor((Date.now() - startTime) / 1000);
         const shareText = `【山西工商学院档案知识闯关】\n\n📝 个人信息\n专业: ${userInfo.major}\n年级: ${userInfo.grade}级\n学号: ${userInfo.studentId}\n\n🏆 游戏成绩\n得分: ${score}分\n答对: ${correctCount}题\n正确率: ${accuracy}%\n用时: ${timeUsed}秒\n\n🔗 扫描上方二维码参与挑战\n计算机信息工程学院`;
         
+        // 兼容微信浏览器的剪贴板复制
+        let copied = false;
         if (navigator.clipboard && navigator.clipboard.writeText) {
             try {
                 await navigator.clipboard.writeText(shareText);
+                copied = true;
                 alert('分享信息已复制到剪贴板！\n\n' + shareText);
-            } catch (clipboardError) {
+            } catch (e) { /* 降级处理 */ }
+        }
+        if (!copied) {
+            // 回退方案：使用 textarea + execCommand
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = shareText;
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                textarea.style.top = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('分享信息已复制到剪贴板！\n\n' + shareText);
+            } catch (e2) {
                 alert('生成图片失败，以下是您的成绩：\n\n' + shareText);
             }
-        } else {
-            alert('生成图片失败，以下是您的成绩：\n\n' + shareText);
         }
     }
 }
@@ -678,6 +704,66 @@ function drawRoundRect(ctx, x, y, width, height, radius) {
     ctx.lineTo(x, y + radius);
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
+}
+
+// 微信浏览器中显示分享图片弹窗（供长按保存）
+function showShareImageModal(imgData) {
+    // 注入样式
+    if (!document.getElementById('share-modal-style')) {
+        const style = document.createElement('style');
+        style.id = 'share-modal-style';
+        style.textContent = `
+            .share-modal-overlay {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.85); z-index: 99999;
+                display: flex; flex-direction: column; align-items: center;
+                justify-content: center; overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .share-modal-overlay .share-modal-content {
+                position: relative; max-width: 95vw; width: 360px;
+                padding: 12px; background: #fff; border-radius: 12px;
+                box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+            }
+            .share-modal-overlay .share-modal-img {
+                width: 100%; border-radius: 8px; display: block;
+                -webkit-touch-callout: default;
+                -webkit-user-select: auto; user-select: auto;
+            }
+            .share-modal-overlay .share-modal-hint {
+                text-align: center; color: #333; font-size: 15px;
+                margin-top: 12px; padding: 10px; background: #fffbe6;
+                border-radius: 8px; font-weight: bold;
+            }
+            .share-modal-overlay .share-modal-close {
+                display: block; width: 100%; margin-top: 10px;
+                padding: 12px; background: #667eea; color: #fff;
+                font-size: 16px; font-weight: bold; border: none;
+                border-radius: 8px; cursor: pointer; text-align: center;
+            }
+            .share-modal-overlay .share-modal-close:active {
+                background: #5a6fd6;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'share-modal-overlay';
+    overlay.innerHTML = `
+        <div class="share-modal-content">
+            <img class="share-modal-img" src="${imgData}" alt="分享图片">
+            <div class="share-modal-hint">👆 长按上方图片即可保存到相册</div>
+            <button class="share-modal-close" onclick="this.closest('.share-modal-overlay').remove()">关闭</button>
+        </div>
+    `;
+
+    // 点击遮罩空白处也可关闭
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.remove();
+    });
+
+    document.body.appendChild(overlay);
 }
 
 // 页面加载完成后初始化
