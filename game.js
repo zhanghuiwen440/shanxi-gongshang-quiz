@@ -108,6 +108,7 @@ let isProcessing = false;
 
 // 用户信息
 let userInfo = {
+    name: '',
     major: '',
     grade: '',
     studentId: ''
@@ -169,16 +170,17 @@ function init() {
 function handleLogin(e) {
     e.preventDefault();
     
+    const name = document.getElementById('name').value.trim();
     const major = document.getElementById('major').value.trim();
     const grade = document.getElementById('grade').value;
     const studentId = document.getElementById('student-id').value.trim();
     
-    if (!major || !grade || !studentId) {
+    if (!name || !major || !grade || !studentId) {
         alert('请填写完整的个人信息！');
         return;
     }
     
-    userInfo = { major, grade, studentId };
+    userInfo = { name, major, grade, studentId };
     
     // 跳转到开始页面
     loginPage.classList.add('hidden');
@@ -519,124 +521,172 @@ async function generateShareImage() {
         ctx.fillStyle = bgGradient;
         ctx.fillRect(0, 0, 600, 900);
         
-        // 绘制白色卡片（使用兼容方式绘制圆角矩形）
+        // ===== 白色圆角卡片 =====
         ctx.fillStyle = '#ffffff';
-        drawRoundRect(ctx, 30, 30, 540, 840, 20);
+        drawRoundRect(ctx, 25, 25, 550, 850, 18);
         ctx.fill();
-        
-        // 绘制标题区域
+
+        // 顶部装饰条
+        const topBarGrad = ctx.createLinearGradient(25, 25, 575, 25);
+        topBarGrad.addColorStop(0, '#667eea');
+        topBarGrad.addColorStop(0.5, '#a78bfa');
+        topBarGrad.addColorStop(1, '#764ba2');
+        ctx.fillStyle = topBarGrad;
+        drawRoundRect(ctx, 25, 25, 550, 5, 0);
+        ctx.fill();
+
+        ctx.textAlign = 'center';
+
+        // ===== 标题区 =====
         ctx.font = 'bold 28px Microsoft YaHei, sans-serif';
         ctx.fillStyle = '#1a1a2e';
-        ctx.textAlign = 'center';
-        ctx.fillText('山西工商学院', 300, 120);
-        
-        ctx.font = '22px Microsoft YaHei, sans-serif';
-        ctx.fillStyle = '#666666';
-        ctx.fillText('档案知识闯关', 300, 150);
-        
-        // 绘制个人信息区域背景
-        ctx.fillStyle = '#f8f9fa';
-        drawRoundRect(ctx, 60, 180, 480, 100, 15);
+        ctx.fillText('山西工商学院', 300, 78);
+
+        // 装饰圆点
+        ctx.fillStyle = '#667eea';
+        ctx.beginPath();
+        ctx.arc(300, 93, 3.5, 0, Math.PI * 2);
         ctx.fill();
-        
-        ctx.font = 'bold 16px Microsoft YaHei, sans-serif';
-        ctx.fillStyle = '#333333';
-        ctx.fillText('📝 个人信息', 300, 210);
-        
-        // 绘制个人信息
-        ctx.font = '13px Microsoft YaHei, sans-serif';
+
+        ctx.font = '17px Microsoft YaHei, sans-serif';
         ctx.fillStyle = '#8b8b9e';
-        ctx.fillText('专业', 150, 245);
-        ctx.fillText('年级', 300, 245);
-        ctx.fillText('学号', 450, 245);
+        ctx.fillText('档案知识闯关', 300, 118);
+
+        // 分隔线
+        ctx.strokeStyle = '#e8e8e8';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(80, 140);
+        ctx.lineTo(520, 140);
+        ctx.stroke();
         
-        ctx.font = 'bold 16px Microsoft YaHei, sans-serif';
-        ctx.fillStyle = '#2d3436';
-        
-        // 处理专业名称 - 最少显示12个汉字
-        const majorText = userInfo.major.length > 12 ? userInfo.major.substring(0, 12) + '...' : userInfo.major;
-        ctx.fillText(majorText, 150, 270);
-        ctx.fillText(userInfo.grade + '级', 300, 270);
-        
-        // 学号严格显示13位，不添加省略号
-        const idText = userInfo.studentId.length >= 13 ? userInfo.studentId.substring(0, 13) : userInfo.studentId.padEnd(13, ' ');
-        ctx.fillText(idText, 450, 270);
-        
-        // 绘制成绩区域背景 - 增加高度
-        ctx.fillStyle = '#f8f9fa';
-        drawRoundRect(ctx, 60, 310, 480, 240, 15);
+        // ===== 个人信息区 =====
+        ctx.fillStyle = '#f5f3ff';
+        drawRoundRect(ctx, 55, 158, 490, 162, 14);
         ctx.fill();
-        
-        ctx.font = 'bold 16px Microsoft YaHei, sans-serif';
+
+        ctx.font = 'bold 15px Microsoft YaHei, sans-serif';
         ctx.fillStyle = '#333333';
-        ctx.fillText('🏆 游戏成绩', 300, 340);
+        ctx.fillText('📝 个人信息', 300, 188);
+
+        // 四个数据色块 — 每个字段独立色块背景
+        const infoCells = [
+            { x: 75, y: 208, label: '姓名', value: userInfo.name, cx: 182, color: '#e8f0fe' },
+            { x: 310, y: 208, label: '专业', value: userInfo.major, cx: 417, color: '#f3e8fe' },
+            { x: 75, y: 263, label: '年级', value: userInfo.grade + '级', cx: 182, color: '#e8faf2' },
+            { x: 310, y: 263, label: '学号', value: userInfo.studentId, cx: 417, color: '#fef3e1' }
+        ];
+        for (const cell of infoCells) {
+            ctx.fillStyle = cell.color;
+            drawRoundRect(ctx, cell.x, cell.y, 215, 48, 8);
+            ctx.fill();
+            // 标签
+            ctx.font = '12px Microsoft YaHei, sans-serif';
+            ctx.fillStyle = '#888';
+            ctx.fillText(cell.label, cell.cx, cell.y + 19);
+            // 取值
+            ctx.font = 'bold 15px Microsoft YaHei, sans-serif';
+            ctx.fillStyle = '#2d3436';
+            ctx.fillText(cell.value, cell.cx, cell.y + 39);
+        }
+
+        // 分隔线
+        ctx.strokeStyle = '#e8e8e8';
+        ctx.beginPath();
+        ctx.moveTo(80, 325);
+        ctx.lineTo(520, 325);
+        ctx.stroke();
         
-        // 绘制成绩卡片 - 调整位置确保在灰色背景内
+        // ===== 成绩区 =====
+        ctx.fillStyle = '#f5f3ff';
+        drawRoundRect(ctx, 55, 343, 490, 238, 14);
+        ctx.fill();
+
+        ctx.font = 'bold 15px Microsoft YaHei, sans-serif';
+        ctx.fillStyle = '#333333';
+        ctx.fillText('🏆 游戏成绩', 300, 375);
+
         const scoreColors = [
+            ['#667eea', '#764ba2'],
             ['#2ed573', '#1e90ff'],
             ['#f39c12', '#e74c3c'],
-            ['#667eea', '#764ba2'],
             ['#00cec9', '#0984e3']
         ];
         const scoreLabels = ['最终得分', '正确率', '答对题数', '用时'];
         const scoreValues = [score + '', accuracy + '%', correctCount + '', timeUsed + 's'];
-        
+
+        const cardW = 150;
+        const cardH = 78;
+        const cardGapX = 30;
+        const cardGapY = 12;
+        const cardStartX = 135;
+        const cardStartY = 395;
+
         for (let i = 0; i < 4; i++) {
-            const x = i % 2 === 0 ? 120 : 340;
-            const y = Math.floor(i / 2) === 0 ? 370 : 470;
-            
-            // 绘制渐变背景
-            const gradient = ctx.createLinearGradient(x, y, x + 120, y + 70);
+            const col = i % 2;
+            const row = Math.floor(i / 2);
+            const cx = cardStartX + col * (cardW + cardGapX);
+            const cy = cardStartY + row * (cardH + cardGapY);
+
+            const gradient = ctx.createLinearGradient(cx, cy, cx + cardW, cy + cardH);
             gradient.addColorStop(0, scoreColors[i][0]);
             gradient.addColorStop(1, scoreColors[i][1]);
             ctx.fillStyle = gradient;
-            drawRoundRect(ctx, x, y, 120, 70, 12);
+            drawRoundRect(ctx, cx, cy, cardW, cardH, 12);
             ctx.fill();
-            
-            ctx.font = '13px Microsoft YaHei, sans-serif';
-            ctx.fillStyle = 'rgba(255,255,255,0.9)';
-            ctx.fillText(scoreLabels[i], x + 60, y + 30);
-            
-            ctx.font = 'bold 32px Microsoft YaHei, sans-serif';
+
+            ctx.font = '12px Microsoft YaHei, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.fillText(scoreLabels[i], cx + cardW / 2, cy + 26);
+
+            ctx.font = 'bold 28px Microsoft YaHei, sans-serif';
             ctx.fillStyle = '#ffffff';
-            ctx.fillText(scoreValues[i], x + 60, y + 60);
+            ctx.fillText(scoreValues[i], cx + cardW / 2, cy + 58);
         }
         
-        // 绘制静态二维码（Base64内嵌，无跨域问题）
+        // ===== 二维码区 =====
+        ctx.font = '12px Microsoft YaHei, sans-serif';
+        ctx.fillStyle = '#999999';
+        ctx.fillText('扫码参与挑战', 300, 591);
+
+        ctx.fillStyle = '#ffffff';
+        drawRoundRect(ctx, 205, 604, 190, 190, 14);
+        ctx.fill();
+        ctx.strokeStyle = '#d4c8f0';
+        ctx.lineWidth = 2;
+        drawRoundRect(ctx, 205, 604, 190, 190, 14);
+        ctx.stroke();
+
         await new Promise((resolve) => {
             const qrImg = new Image();
             qrImg.onload = function() {
-                ctx.fillStyle = '#ffffff';
-                drawRoundRect(ctx, 210, 570, 180, 180, 12);
-                ctx.fill();
-                ctx.strokeStyle = '#eeeeee';
-                ctx.lineWidth = 2;
-                drawRoundRect(ctx, 210, 570, 180, 180, 12);
-                ctx.stroke();
-                ctx.drawImage(qrImg, 218, 578, 164, 164);
+                ctx.drawImage(qrImg, 218, 617, 164, 164);
                 resolve();
             };
             qrImg.onerror = function() {
-                ctx.fillStyle = '#f5f6fa';
-                drawRoundRect(ctx, 210, 570, 180, 180, 12);
-                ctx.fill();
                 ctx.font = '13px Microsoft YaHei, sans-serif';
                 ctx.fillStyle = '#999999';
-                ctx.textAlign = 'center';
-                ctx.fillText('二维码加载失败', 300, 650);
+                ctx.fillText('二维码加载失败', 300, 699);
                 resolve();
             };
             qrImg.src = 'data:image/png;base64,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';
         });
         
-        // 绘制二维码下方文字
-        ctx.font = '14px Microsoft YaHei, sans-serif';
-        ctx.fillStyle = '#666666';
-        ctx.fillText('扫描上方二维码参与挑战', 300, 775);
-        
+        // ===== 底部文字 =====
         ctx.font = '13px Microsoft YaHei, sans-serif';
-        ctx.fillStyle = '#999999';
-        ctx.fillText('计算机信息工程学院', 300, 800);
+        ctx.fillStyle = '#777777';
+        ctx.fillText('扫描上方二维码参与挑战', 300, 821);
+
+        ctx.font = '12px Microsoft YaHei, sans-serif';
+        ctx.fillStyle = '#aaaaaa';
+        ctx.fillText('计算机信息工程学院', 300, 843);
+
+        // 底部装饰线
+        ctx.strokeStyle = '#e8e8e8';
+        ctx.beginPath();
+        ctx.moveTo(180, 866);
+        ctx.lineTo(420, 866);
+        ctx.stroke();
         
         const imgData = canvas.toDataURL('image/png');
         
@@ -660,7 +710,7 @@ async function generateShareImage() {
         
         const accuracy = Math.round((correctCount / currentQuestions.length) * 100);
         const timeUsed = Math.floor((Date.now() - startTime) / 1000);
-        const shareText = `【山西工商学院档案知识闯关】\n\n📝 个人信息\n专业: ${userInfo.major}\n年级: ${userInfo.grade}级\n学号: ${userInfo.studentId}\n\n🏆 游戏成绩\n得分: ${score}分\n答对: ${correctCount}题\n正确率: ${accuracy}%\n用时: ${timeUsed}秒\n\n🔗 扫描上方二维码参与挑战\n计算机信息工程学院`;
+        const shareText = `【山西工商学院档案知识闯关】\n\n📝 个人信息\n姓名: ${userInfo.name}\n专业: ${userInfo.major}\n年级: ${userInfo.grade}级\n学号: ${userInfo.studentId}\n\n🏆 游戏成绩\n得分: ${score}分\n答对: ${correctCount}题\n正确率: ${accuracy}%\n用时: ${timeUsed}秒\n\n🔗 扫描上方二维码参与挑战\n计算机信息工程学院`;
         
         // 兼容微信浏览器的剪贴板复制
         let copied = false;
