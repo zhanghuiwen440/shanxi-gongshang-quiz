@@ -99,6 +99,7 @@ let timer = 150;
 let timerInterval = null;
 let selectedCategory = 'all';
 let startTime = 0;
+let isProcessing = false;
 
 // 用户信息
 let userInfo = {
@@ -190,6 +191,7 @@ function startGame() {
     correctCount = 0;
     timer = 150;
     startTime = Date.now();
+    isProcessing = false;
     
     currentQuestionEl.textContent = '1';
     totalQuestionsEl.textContent = currentQuestions.length;
@@ -310,12 +312,18 @@ function loadQuestion() {
 
 // 选择选项
 function selectOption(optionEl, selectedIndex, correctIndex) {
+    console.log('selectOption called, nextBtn hidden:', nextBtn.classList.contains('hidden'));
+    
     if (!nextBtn.classList.contains('hidden')) return;
     
     const question = currentQuestions[currentQuestionIndex];
     const options = document.querySelectorAll('.option');
     
     options.forEach(opt => opt.classList.add('disabled'));
+    
+    // 更新进度条（回答后立即更新）
+    const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
+    progressFill.style.width = `${progress}%`;
     
     if (selectedIndex === correctIndex) {
         // 回答正确，自动跳转下一题
@@ -330,6 +338,7 @@ function selectOption(optionEl, selectedIndex, correctIndex) {
         
         // 延迟1.5秒后自动跳转到下一题
         setTimeout(() => {
+            console.log('setTimeout calling nextQuestion');
             nextQuestion();
         }, 1500);
     } else {
@@ -343,18 +352,40 @@ function selectOption(optionEl, selectedIndex, correctIndex) {
         
         feedback.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    
+    // 禁用所有选项的点击事件，防止连击
+    options.forEach(opt => {
+        opt.style.pointerEvents = 'none';
+    });
 }
 
 // 下一题
 function nextQuestion() {
+    // 防止重复调用
+    if (isProcessing) return;
+    isProcessing = true;
+    
+    console.log('nextQuestion called, currentQuestionIndex:', currentQuestionIndex, 'total:', currentQuestions.length);
+    
     currentQuestionIndex++;
     
-    if (currentQuestionIndex < currentQuestions.length) {
-        currentQuestionEl.textContent = currentQuestionIndex + 1;
-        loadQuestion();
-    } else {
+    console.log('After increment, currentQuestionIndex:', currentQuestionIndex);
+    
+    // 更新进度条（无论是否是最后一题）
+    const progress = Math.min(((currentQuestionIndex) / currentQuestions.length) * 100, 100);
+    progressFill.style.width = `${progress}%`;
+    
+    // 检查是否已完成所有题目
+    if (currentQuestionIndex >= currentQuestions.length) {
+        console.log('Game ending, calling endGame()');
         endGame();
+        isProcessing = false;
+        return;
     }
+    
+    currentQuestionEl.textContent = currentQuestionIndex + 1;
+    loadQuestion();
+    isProcessing = false;
 }
 
 // 启动计时器
@@ -381,11 +412,19 @@ function startTimer() {
 
 // 结束游戏
 function endGame() {
+    console.log('endGame called');
+    
+    // 检查元素是否存在
+    console.log('gamePage:', gamePage);
+    console.log('resultPage:', resultPage);
+    
     clearInterval(timerInterval);
     
     const timeUsed = Math.floor((Date.now() - startTime) / 1000);
     const accuracy = currentQuestions.length > 0 ? 
         Math.round((correctCount / currentQuestions.length) * 100) : 0;
+    
+    console.log('Final stats - score:', score, 'correctCount:', correctCount, 'accuracy:', accuracy, 'timeUsed:', timeUsed);
     
     finalScoreEl.textContent = score;
     correctCountEl.textContent = correctCount;
@@ -414,8 +453,18 @@ function endGame() {
         resultMessage.textContent = '别灰心！档案知识很重要，坚持学习就会有进步！';
     }
     
+    console.log('Switching to result page');
     gamePage.classList.add('hidden');
     resultPage.classList.remove('hidden');
+    
+    // 强制刷新DOM
+    setTimeout(() => {
+        console.log('Force reflow check');
+        console.log('gamePage hidden:', gamePage.classList.contains('hidden'));
+        console.log('resultPage hidden:', resultPage.classList.contains('hidden'));
+    }, 100);
+    
+    console.log('Result page should now be visible');
 }
 
 // 重新开始
@@ -449,52 +498,186 @@ function backToStart() {
 // 生成分享图片
 async function generateShareImage() {
     try {
-        // 填充分享卡片数据
-        document.getElementById('share-major').textContent = userInfo.major;
-        document.getElementById('share-grade').textContent = userInfo.grade + '级';
-        document.getElementById('share-student-id').textContent = userInfo.studentId;
-        document.getElementById('share-score').textContent = score;
-        document.getElementById('share-accuracy').textContent = Math.round((correctCount / currentQuestions.length) * 100) + '%';
-        document.getElementById('share-correct').textContent = correctCount;
-        document.getElementById('share-time').textContent = Math.floor((Date.now() - startTime) / 1000) + 's';
+        const accuracy = Math.round((correctCount / currentQuestions.length) * 100);
+        const timeUsed = Math.floor((Date.now() - startTime) / 1000);
         
-        // 生成二维码
-        const qrContainer = document.getElementById('share-qrcode');
-        qrContainer.innerHTML = '';
-        await QRCode.toCanvas(qrContainer, 'https://www.sxtbu.xyz', {
-            width: 150,
-            margin: 2,
-            color: {
-                dark: '#667eea',
-                light: '#ffffff'
-            }
+        // 创建Canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = 600;
+        canvas.height = 900;
+        const ctx = canvas.getContext('2d');
+        
+        // 绘制背景渐变
+        const bgGradient = ctx.createLinearGradient(0, 0, 0, 900);
+        bgGradient.addColorStop(0, '#667eea');
+        bgGradient.addColorStop(1, '#764ba2');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, 600, 900);
+        
+        // 绘制白色卡片（使用兼容方式绘制圆角矩形）
+        ctx.fillStyle = '#ffffff';
+        drawRoundRect(ctx, 30, 30, 540, 840, 20);
+        ctx.fill();
+        
+        // 绘制标题区域
+        ctx.font = 'bold 28px Microsoft YaHei, sans-serif';
+        ctx.fillStyle = '#1a1a2e';
+        ctx.textAlign = 'center';
+        ctx.fillText('山西工商学院', 300, 120);
+        
+        ctx.font = '22px Microsoft YaHei, sans-serif';
+        ctx.fillStyle = '#666666';
+        ctx.fillText('档案知识闯关', 300, 150);
+        
+        // 绘制个人信息区域背景
+        ctx.fillStyle = '#f8f9fa';
+        drawRoundRect(ctx, 60, 180, 480, 100, 15);
+        ctx.fill();
+        
+        ctx.font = 'bold 16px Microsoft YaHei, sans-serif';
+        ctx.fillStyle = '#333333';
+        ctx.fillText('📝 个人信息', 300, 210);
+        
+        // 绘制个人信息
+        ctx.font = '13px Microsoft YaHei, sans-serif';
+        ctx.fillStyle = '#8b8b9e';
+        ctx.fillText('专业', 150, 245);
+        ctx.fillText('年级', 300, 245);
+        ctx.fillText('学号', 450, 245);
+        
+        ctx.font = 'bold 16px Microsoft YaHei, sans-serif';
+        ctx.fillStyle = '#2d3436';
+        
+        // 处理专业名称 - 最少显示12个汉字
+        const majorText = userInfo.major.length > 12 ? userInfo.major.substring(0, 12) + '...' : userInfo.major;
+        ctx.fillText(majorText, 150, 270);
+        ctx.fillText(userInfo.grade + '级', 300, 270);
+        
+        // 学号严格显示13位，不添加省略号
+        const idText = userInfo.studentId.length >= 13 ? userInfo.studentId.substring(0, 13) : userInfo.studentId.padEnd(13, ' ');
+        ctx.fillText(idText, 450, 270);
+        
+        // 绘制成绩区域背景 - 增加高度
+        ctx.fillStyle = '#f8f9fa';
+        drawRoundRect(ctx, 60, 310, 480, 240, 15);
+        ctx.fill();
+        
+        ctx.font = 'bold 16px Microsoft YaHei, sans-serif';
+        ctx.fillStyle = '#333333';
+        ctx.fillText('🏆 游戏成绩', 300, 340);
+        
+        // 绘制成绩卡片 - 调整位置确保在灰色背景内
+        const scoreColors = [
+            ['#2ed573', '#1e90ff'],
+            ['#f39c12', '#e74c3c'],
+            ['#667eea', '#764ba2'],
+            ['#00cec9', '#0984e3']
+        ];
+        const scoreLabels = ['最终得分', '正确率', '答对题数', '用时'];
+        const scoreValues = [score + '', accuracy + '%', correctCount + '', timeUsed + 's'];
+        
+        for (let i = 0; i < 4; i++) {
+            const x = i % 2 === 0 ? 120 : 340;
+            const y = Math.floor(i / 2) === 0 ? 370 : 470;
+            
+            // 绘制渐变背景
+            const gradient = ctx.createLinearGradient(x, y, x + 120, y + 70);
+            gradient.addColorStop(0, scoreColors[i][0]);
+            gradient.addColorStop(1, scoreColors[i][1]);
+            ctx.fillStyle = gradient;
+            drawRoundRect(ctx, x, y, 120, 70, 12);
+            ctx.fill();
+            
+            ctx.font = '13px Microsoft YaHei, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            ctx.fillText(scoreLabels[i], x + 60, y + 30);
+            
+            ctx.font = 'bold 32px Microsoft YaHei, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(scoreValues[i], x + 60, y + 60);
+        }
+        
+        // 绘制静态二维码（Base64内嵌，无跨域问题）
+        await new Promise((resolve) => {
+            const qrImg = new Image();
+            qrImg.onload = function() {
+                ctx.fillStyle = '#ffffff';
+                drawRoundRect(ctx, 210, 570, 180, 180, 12);
+                ctx.fill();
+                ctx.strokeStyle = '#eeeeee';
+                ctx.lineWidth = 2;
+                drawRoundRect(ctx, 210, 570, 180, 180, 12);
+                ctx.stroke();
+                ctx.drawImage(qrImg, 218, 578, 164, 164);
+                resolve();
+            };
+            qrImg.onerror = function() {
+                ctx.fillStyle = '#f5f6fa';
+                drawRoundRect(ctx, 210, 570, 180, 180, 12);
+                ctx.fill();
+                ctx.font = '13px Microsoft YaHei, sans-serif';
+                ctx.fillStyle = '#999999';
+                ctx.textAlign = 'center';
+                ctx.fillText('二维码加载失败', 300, 650);
+                resolve();
+            };
+            qrImg.src = 'data:image/png;base64,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';
         });
         
-        // 显示模板
-        const template = document.getElementById('share-template');
-        template.style.display = 'block';
+        // 绘制二维码下方文字
+        ctx.font = '14px Microsoft YaHei, sans-serif';
+        ctx.fillStyle = '#666666';
+        ctx.fillText('扫描上方二维码参与挑战', 300, 775);
         
-        // 生成图片
-        const card = document.getElementById('share-card');
-        const canvas = await html2canvas(card, {
-            scale: 2,
-            useCORS: true,
-            logging: false
-        });
+        ctx.font = '13px Microsoft YaHei, sans-serif';
+        ctx.fillStyle = '#999999';
+        ctx.fillText('计算机信息工程学院', 300, 800);
         
-        // 隐藏模板
-        template.style.display = 'none';
-        
-        // 下载图片
+        // 创建下载链接
         const link = document.createElement('a');
-        link.download = `档案知识闯关-${userInfo.studentId}-${Date.now()}.png`;
+        link.download = `档案闯关_${userInfo.studentId}.png`;
         link.href = canvas.toDataURL('image/png');
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
+        
+        alert('分享图片已生成并下载！');
         
     } catch (error) {
         console.error('生成分享图片失败:', error);
-        alert('生成分享图片失败，请重试！');
+        
+        const accuracy = Math.round((correctCount / currentQuestions.length) * 100);
+        const timeUsed = Math.floor((Date.now() - startTime) / 1000);
+        const shareText = `【山西工商学院档案知识闯关】\n\n📝 个人信息\n专业: ${userInfo.major}\n年级: ${userInfo.grade}级\n学号: ${userInfo.studentId}\n\n🏆 游戏成绩\n得分: ${score}分\n答对: ${correctCount}题\n正确率: ${accuracy}%\n用时: ${timeUsed}秒\n\n🔗 扫描上方二维码参与挑战\n计算机信息工程学院`;
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            try {
+                await navigator.clipboard.writeText(shareText);
+                alert('分享信息已复制到剪贴板！\n\n' + shareText);
+            } catch (clipboardError) {
+                alert('生成图片失败，以下是您的成绩：\n\n' + shareText);
+            }
+        } else {
+            alert('生成图片失败，以下是您的成绩：\n\n' + shareText);
+        }
     }
+}
+
+// 兼容方式绘制圆角矩形
+function drawRoundRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
 }
 
 // 页面加载完成后初始化

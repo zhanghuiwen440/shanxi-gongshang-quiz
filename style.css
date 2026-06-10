@@ -47,11 +47,24 @@ body::before {
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     padding: 20px;
+    box-sizing: border-box;
 }
 
 .hidden {
+    display: none !important;
+}
+
+/* 确保页面隐藏时能覆盖其他样式 */
+.page.hidden {
+    display: none !important;
+}
+
+#game-page.hidden,
+#result-page.hidden,
+#start-page.hidden,
+#login-page.hidden {
     display: none !important;
 }
 
@@ -316,143 +329,170 @@ body::before {
 }
 
 /* ===== 答题页面 ===== */
-.game-page {
-    padding: 20px;
-    width: 100%;
-    max-width: 500px;
+#game-page {
+    min-height: 100vh !important;
+    width: 100% !important;
+    max-width: 600px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    position: relative !important;
+    padding: 15px !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    background: transparent !important;
+    border: none !important;
 }
 
-.game-header {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    margin-bottom: 20px;
+#game-page > div {
+    width: 100% !important;
+    max-width: 570px !important;
+    flex-shrink: 0 !important;
+    float: none !important;
+    position: static !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+}
+
+#game-page .game-header {
+    background: white !important;
+    border-radius: 20px !important;
+    padding: 20px !important;
     box-shadow: 
         0 2px 4px rgba(0, 0, 0, 0.02),
-        0 8px 16px rgba(0, 0, 0, 0.03);
+        0 8px 16px rgba(0, 0, 0, 0.03) !important;
+    width: 100% !important;
+    margin-bottom: 0 !important;
 }
 
-.game-header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
+#game-page .game-header-top {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 12px !important;
 }
 
-.back-btn {
-    background: #f5f6fa;
-    color: #57606f;
-    border: none;
-    border-radius: 12px;
-    padding: 10px 18px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
+#game-page .back-btn {
+    background: #f5f6fa !important;
+    color: #57606f !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 10px 18px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
 }
 
-.back-btn:hover {
-    background: #e8eaed;
-    transform: translateX(-2px);
+#game-page .game-stats {
+    display: flex !important;
+    gap: 12px !important;
+    font-size: 13px !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
 }
 
-.back-btn:active {
-    transform: translateX(0);
+#game-page .stat {
+    color: #57606f !important;
+    font-weight: 500 !important;
+    padding: 6px 12px !important;
+    background: #f5f6fa !important;
+    border-radius: 10px !important;
 }
 
-.game-stats {
-    display: flex;
-    gap: 16px;
-    font-size: 14px;
-}
-
-.stat {
-    color: #57606f;
-    font-weight: 500;
-    padding: 6px 12px;
-    background: #f5f6fa;
-    border-radius: 10px;
-}
-
-.stat.timer {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-    color: white;
-    font-weight: 600;
+#game-page .stat.timer {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
+    color: white !important;
 }
 
 /* ===== 进度条 ===== */
-.progress-bar {
-    height: 8px;
-    background: #f0f0f5;
-    border-radius: 4px;
-    overflow: hidden;
+#game-page .progress-bar {
+    height: 6px !important;
+    background: #f0f0f5 !important;
+    border-radius: 3px !important;
+    overflow: hidden !important;
 }
 
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #2ed573, #1e90ff);
+#game-page .progress-fill {
+    height: 100% !important;
+    background: linear-gradient(90deg, #2ed573, #1e90ff) !important;
     width: 0%;
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 4px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 /* ===== 题目容器 ===== */
-.question-container {
-    background: white;
-    border-radius: 20px;
-    padding: 28px;
+#game-page .question-container {
+    background: white !important;
+    border-radius: 20px !important;
+    padding: 24px !important;
     box-shadow: 
         0 2px 4px rgba(0, 0, 0, 0.02),
-        0 8px 16px rgba(0, 0, 0, 0.03);
-    margin-bottom: 20px;
+        0 8px 16px rgba(0, 0, 0, 0.03) !important;
+    width: 100% !important;
+    margin-bottom: 0 !important;
 }
 
-.question-category {
-    display: inline-block;
-    padding: 6px 14px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    font-size: 12px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-    font-weight: 500;
+#game-page .question-category {
+    display: inline-block !important;
+    padding: 6px 14px !important;
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    color: white !important;
+    font-size: 12px !important;
+    border-radius: 20px !important;
+    margin-bottom: 16px !important;
+    font-weight: 500 !important;
 }
 
-.question-text {
-    font-size: 18px;
-    color: #1a1a2e;
-    margin-bottom: 24px;
-    line-height: 1.6;
-    font-weight: 500;
+#game-page .question-text {
+    font-size: 17px !important;
+    color: #1a1a2e !important;
+    margin-bottom: 20px !important;
+    line-height: 1.6 !important;
+    font-weight: 500 !important;
 }
 
 /* ===== 选项样式 ===== */
-.options-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+#game-page .options-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin-bottom: 0 !important;
 }
 
-.option {
-    padding: 16px 20px;
-    border: 2px solid #e8eaed;
-    border-radius: 14px;
-    background: white;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    touch-action: manipulation;
+#game-page .option {
+    padding: 16px 20px !important;
+    border: 2px solid #e8eaed !important;
+    border-radius: 14px !important;
+    background: white !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: flex !important;
+    align-items: center !important;
+    touch-action: manipulation !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    float: none !important;
 }
 
-.option:hover {
-    border-color: #2ed573;
-    background: rgba(46, 213, 115, 0.03);
-    transform: translateX(4px);
+#game-page .option:hover {
+    border-color: #2ed573 !important;
+    background: rgba(46, 213, 115, 0.03) !important;
+    transform: translateX(4px) !important;
 }
 
-.option:active {
-    transform: scale(0.98);
+#game-page .option:active {
+    transform: scale(0.98) !important;
 }
 
 .option-letter {
@@ -518,14 +558,19 @@ body::before {
 }
 
 /* ===== 下一题按钮 ===== */
-.game-footer {
-    display: flex;
-    justify-content: center;
+#game-page .game-footer {
+    display: flex !important;
+    justify-content: center !important;
+    padding-top: 10px !important;
+    width: 100% !important;
+    margin-top: 10px !important;
 }
 
-#next-btn {
-    padding: 14px 48px;
-    font-size: 15px;
+#game-page #next-btn {
+    padding: 14px 48px !important;
+    font-size: 15px !important;
+    width: 100% !important;
+    max-width: 200px !important;
 }
 
 /* ===== 结果页面 ===== */
@@ -646,12 +691,14 @@ body::before {
     display: flex;
     gap: 12px;
     align-items: stretch;
+    flex-direction: row;
+    flex-wrap: nowrap;
 }
 
 .result-actions .btn {
     flex: 1;
-    width: 0;
-    min-width: 0;
+    width: auto;
+    min-width: 120px;
     padding: 16px 24px;
     font-size: 15px;
 }
