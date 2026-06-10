@@ -55,6 +55,76 @@ body::before {
     display: none !important;
 }
 
+/* ===== 登录页面 ===== */
+.login-container {
+    background: white;
+    border-radius: 24px;
+    padding: 50px 40px;
+    text-align: center;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 
+        0 4px 6px rgba(0, 0, 0, 0.02),
+        0 10px 20px rgba(0, 0, 0, 0.03),
+        0 25px 50px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #2ed573, #1e90ff, #ff6b6b);
+}
+
+.login-form {
+    text-align: left;
+    margin-top: 32px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    color: #8b8b9e;
+    margin-bottom: 8px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e8eaed;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #2ed573;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(46, 213, 115, 0.1);
+}
+
+.form-input::placeholder {
+    color: #b0b0b0;
+}
+
+.form-input option {
+    color: #2d3436;
+}
+
 /* ===== 开始页面 ===== */
 .start-container {
     background: white;
@@ -683,6 +753,7 @@ body::before {
         padding: 12px;
     }
     
+    .login-container,
     .start-container {
         padding: 32px 24px;
         border-radius: 20px;
@@ -700,6 +771,15 @@ body::before {
     .subtitle {
         font-size: 13px;
         margin-bottom: 24px;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .form-input {
+        padding: 12px 14px;
+        font-size: 14px;
     }
     
     .game-info {

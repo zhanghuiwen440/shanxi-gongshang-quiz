@@ -100,13 +100,22 @@ let timerInterval = null;
 let selectedCategory = 'all';
 let startTime = 0;
 
+// 用户信息
+let userInfo = {
+    major: '',
+    grade: '',
+    studentId: ''
+};
+
 // 每次答题的题目数量
 const QUESTIONS_PER_GAME = 25;
 
 // DOM元素
+const loginPage = document.getElementById('login-page');
 const startPage = document.getElementById('start-page');
 const gamePage = document.getElementById('game-page');
 const resultPage = document.getElementById('result-page');
+const loginForm = document.getElementById('login-form');
 const startBtn = document.getElementById('start-btn');
 const nextBtn = document.getElementById('next-btn');
 const restartBtn = document.getElementById('restart-btn');
@@ -132,10 +141,13 @@ const resultMessage = document.getElementById('result-message');
 
 // 初始化
 function init() {
+    // 登录表单提交
+    loginForm.addEventListener('submit', handleLogin);
+    
     startBtn.addEventListener('click', startGame);
     nextBtn.addEventListener('click', nextQuestion);
     restartBtn.addEventListener('click', restartGame);
-    shareBtn.addEventListener('click', shareScore);
+    shareBtn.addEventListener('click', generateShareImage);
     backToStartBtn.addEventListener('click', backToStart);
     
     categoryBtns.forEach(btn => {
@@ -145,6 +157,26 @@ function init() {
             selectedCategory = btn.dataset.category;
         });
     });
+}
+
+// 处理登录
+function handleLogin(e) {
+    e.preventDefault();
+    
+    const major = document.getElementById('major').value.trim();
+    const grade = document.getElementById('grade').value;
+    const studentId = document.getElementById('student-id').value.trim();
+    
+    if (!major || !grade || !studentId) {
+        alert('请填写完整的个人信息！');
+        return;
+    }
+    
+    userInfo = { major, grade, studentId };
+    
+    // 跳转到开始页面
+    loginPage.classList.add('hidden');
+    startPage.classList.remove('hidden');
 }
 
 // 开始游戏
@@ -414,22 +446,54 @@ function backToStart() {
     }
 }
 
-// 分享成绩
-function shareScore() {
-    const accuracy = currentQuestions.length > 0 ? 
-        Math.round((correctCount / currentQuestions.length) * 100) : 0;
-    const text = `我在「山西工商学院档案知识闯关」中获得了${score}分！答对了${correctCount}题，正确率${accuracy}%！快来挑战吧！`;
-    
-    if (navigator.share) {
-        navigator.share({
-            title: '山西工商学院档案知识闯关',
-            text: text,
-            url: window.location.href
+// 生成分享图片
+async function generateShareImage() {
+    try {
+        // 填充分享卡片数据
+        document.getElementById('share-major').textContent = userInfo.major;
+        document.getElementById('share-grade').textContent = userInfo.grade + '级';
+        document.getElementById('share-student-id').textContent = userInfo.studentId;
+        document.getElementById('share-score').textContent = score;
+        document.getElementById('share-accuracy').textContent = Math.round((correctCount / currentQuestions.length) * 100) + '%';
+        document.getElementById('share-correct').textContent = correctCount;
+        document.getElementById('share-time').textContent = Math.floor((Date.now() - startTime) / 1000) + 's';
+        
+        // 生成二维码
+        const qrContainer = document.getElementById('share-qrcode');
+        qrContainer.innerHTML = '';
+        await QRCode.toCanvas(qrContainer, 'https://www.sxtbu.xyz', {
+            width: 150,
+            margin: 2,
+            color: {
+                dark: '#667eea',
+                light: '#ffffff'
+            }
         });
-    } else {
-        navigator.clipboard.writeText(text).then(() => {
-            alert('成绩已复制到剪贴板！');
+        
+        // 显示模板
+        const template = document.getElementById('share-template');
+        template.style.display = 'block';
+        
+        // 生成图片
+        const card = document.getElementById('share-card');
+        const canvas = await html2canvas(card, {
+            scale: 2,
+            useCORS: true,
+            logging: false
         });
+        
+        // 隐藏模板
+        template.style.display = 'none';
+        
+        // 下载图片
+        const link = document.createElement('a');
+        link.download = `档案知识闯关-${userInfo.studentId}-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+    } catch (error) {
+        console.error('生成分享图片失败:', error);
+        alert('生成分享图片失败，请重试！');
     }
 }
 

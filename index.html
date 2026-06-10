@@ -8,10 +8,47 @@
     <meta name="format-detection" content="telephone=no">
     <title>档案知识闯关</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
+    <!-- 登录页面 -->
+    <div id="login-page" class="page">
+        <div class="login-container">
+            <div class="logo">📚</div>
+            <h1 class="title">山西工商学院<br>档案知识闯关</h1>
+            <p class="subtitle">请填写个人信息开始游戏</p>
+            
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="major">专业</label>
+                    <input type="text" id="major" class="form-input" placeholder="请输入专业" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="grade">年级</label>
+                    <select id="grade" class="form-input" required>
+                        <option value="">请选择年级</option>
+                        <option value="2022">2022级</option>
+                        <option value="2023">2023级</option>
+                        <option value="2024">2024级</option>
+                        <option value="2025">2025级</option>
+                        <option value="2026">2026级</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="student-id">学号</label>
+                    <input type="text" id="student-id" class="form-input" placeholder="请输入学号" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">开始闯关</button>
+            </form>
+        </div>
+    </div>
+
     <!-- 开始页面 -->
-    <div id="start-page" class="page">
+    <div id="start-page" class="page hidden">
         <div class="start-container">
             <div class="logo">📚</div>
             <h1 class="title">山西工商学院<br>档案知识闯关</h1>
@@ -99,6 +136,60 @@
             <div class="result-actions">
                 <button id="restart-btn" class="btn btn-primary">再玩一次</button>
                 <button id="share-btn" class="btn btn-secondary">分享成绩</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享图片模板（隐藏） -->
+    <div id="share-template" style="display: none;">
+        <div id="share-card" style="width: 600px; height: 800px; background: linear-gradient(135deg, #667eea, #764ba2); padding: 40px; font-family: 'Microsoft YaHei', sans-serif;">
+            <div style="background: white; border-radius: 20px; padding: 40px; height: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="font-size: 60px; margin-bottom: 20px;">📚</div>
+                    <h1 style="font-size: 32px; color: #1a1a2e; margin: 0 0 10px 0; font-weight: bold;">山西工商学院</h1>
+                    <h2 style="font-size: 24px; color: #666; margin: 0;">档案知识闯关</h2>
+                </div>
+                
+                <div style="background: #f8f9fa; border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <div>
+                            <div style="font-size: 14px; color: #8b8b9e; margin-bottom: 5px;">专业</div>
+                            <div id="share-major" style="font-size: 18px; color: #2d3436; font-weight: bold;">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; color: #8b8b9e; margin-bottom: 5px;">年级</div>
+                            <div id="share-grade" style="font-size: 18px; color: #2d3436; font-weight: bold;">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; color: #8b8b9e; margin-bottom: 5px;">学号</div>
+                            <div id="share-student-id" style="font-size: 18px; color: #2d3436; font-weight: bold;">-</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: linear-gradient(135deg, #2ed573, #1e90ff); padding: 20px; border-radius: 15px; text-align: center;">
+                        <div style="font-size: 14px; color: white; margin-bottom: 10px;">最终得分</div>
+                        <div id="share-score" style="font-size: 36px; color: white; font-weight: bold;">0</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f39c12, #e74c3c); padding: 20px; border-radius: 15px; text-align: center;">
+                        <div style="font-size: 14px; color: white; margin-bottom: 10px;">正确率</div>
+                        <div id="share-accuracy" style="font-size: 36px; color: white; font-weight: bold;">0%</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 20px; border-radius: 15px; text-align: center;">
+                        <div style="font-size: 14px; color: white; margin-bottom: 10px;">答对题数</div>
+                        <div id="share-correct" style="font-size: 36px; color: white; font-weight: bold;">0</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #00cec9, #0984e3); padding: 20px; border-radius: 15px; text-align: center;">
+                        <div style="font-size: 14px; color: white; margin-bottom: 10px;">用时</div>
+                        <div id="share-time" style="font-size: 36px; color: white; font-weight: bold;">0s</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <div id="share-qrcode" style="display: inline-block; background: white; padding: 15px; border-radius: 10px;"></div>
+                    <div style="margin-top: 15px; font-size: 14px; color: #666;">扫描二维码参与挑战</div>
+                </div>
             </div>
         </div>
     </div>
